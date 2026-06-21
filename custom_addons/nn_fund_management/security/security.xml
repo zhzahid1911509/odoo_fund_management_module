@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="access_nn_fund_account" model="ir.model.access">
+            <field name="name">access_nn_fund_account</field>
+            <field name="model_id" ref="model_nn_fund_account"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_incoming_fund" model="ir.model.access">
+            <field name="name">access_nn_incoming_fund</field>
+            <field name="model_id" ref="model_nn_incoming_fund"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_project" model="ir.model.access">
+            <field name="name">access_nn_project</field>
+            <field name="model_id" ref="model_nn_project"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_expense_head" model="ir.model.access">
+            <field name="name">access_nn_expense_head</field>
+            <field name="model_id" ref="model_nn_expense_head"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_fund_allocation" model="ir.model.access">
+            <field name="name">access_nn_fund_allocation</field>
+            <field name="model_id" ref="model_nn_fund_allocation"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_fund_requisition" model="ir.model.access">
+            <field name="name">access_nn_fund_requisition</field>
+            <field name="model_id" ref="model_nn_fund_requisition"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="access_nn_fund_transfer" model="ir.model.access">
+            <field name="name">access_nn_fund_transfer</field>
+            <field name="model_id" ref="model_nn_fund_transfer"/>
+            <field name="group_id" ref="base.group_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>
