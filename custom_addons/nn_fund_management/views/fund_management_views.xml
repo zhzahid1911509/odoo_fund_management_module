@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_nn_incoming_fund" model="ir.sequence">
+        <field name="name">Incoming Fund Sequence</field>
+        <field name="code">nn.incoming.fund</field>
+        <field name="prefix">INC-2026-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_nn_fund_allocation" model="ir.sequence">
+        <field name="name">Fund Allocation Sequence</field>
+        <field name="code">nn.fund.allocation</field>
+        <field name="prefix">ALLOC-2026-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_nn_fund_requisition" model="ir.sequence">
+        <field name="name">Fund Requisition Sequence</field>
+        <field name="code">nn.fund.requisition</field>
+        <field name="prefix">REQ-2026-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_nn_fund_transfer" model="ir.sequence">
+        <field name="name">Fund Transfer Sequence</field>
+        <field name="code">nn.fund.transfer</field>
+        <field name="prefix">XFER-2026-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="view_fund_account_tree" model="ir.ui.view">
+        <field name="name">nn.fund.account.tree</field>
+        <field name="model">nn.fund.account</field>
+        <field name="arch" type="xml">
+            <tree string="Fund Accounts">
+                <field name="name"/>
+                <field name="account_number"/>
+                <field name="total_received" sum="Total Deposits"/>
+                <field name="amount_held" sum="Total Holds"/>
+                <field name="total_assigned" sum="Total Assigned Out"/>
+                <field name="available_unassigned_balance" sum="Net Liquid Assets"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_fund_account_form" model="ir.ui.view">
+        <field name="name">nn.fund.account.form</field>
+        <field name="model">nn.fund.account</field>
+        <field name="arch" type="xml">
+            <form string="Fund Account">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Account Name"/>
+                        <h1><field name="name" placeholder="e.g. Prime Bank Current Account"/></h1>
+                    </div>
+                    <group>
+                        <group string="Account Coordinates">
+                            <field name="account_number"/>
+                            <field name="total_received"/>
+                        </group>
+                        <group string="Dynamic Analytical Dashboard">
+                            <field name="amount_held"/>
+                            <field name="total_assigned"/>
+                            <field name="available_unassigned_balance"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Allocation Pipeline Ledger" name="allocations">
+                            <field name="allocation_ids" readonly="1"/>
+                        </page>
+                        <page string="Statement Deposit History" name="incoming_funds">
+                            <field name="incoming_fund_ids" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fund_account" model="ir.actions.act_window">
+        <field name="name">Bank Accounts</field>
+        <field name="res_model">nn.fund.account</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_incoming_fund_tree" model="ir.ui.view">
+        <field name="name">nn.incoming.fund.tree</field>
+        <field name="model">nn.incoming.fund</field>
+        <field name="arch" type="xml">
+            <tree string="Incoming Funds" decoration-success="state == 'confirmed'">
+                <field name="name"/>
+                <field name="account_id"/>
+                <field name="date"/>
+                <field name="amount" sum="Total Inflows Recieved"/>
+                <field name="transaction_ref"/>
+                <field name="sender_source"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_incoming_fund_form" model="ir.ui.view">
+        <field name="name">nn.incoming.fund.form</field>
+        <field name="model">nn.incoming.fund</field>
+        <field name="arch" type="xml">
+            <form string="Incoming Fund Entry">
+                <header>
+                    <button name="action_confirm" string="Confirm / Post Amount" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Financial Matrix Allocation">
+                            <field name="account_id" readonly="state != 'draft'"/>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Audit Mappings &amp; Metadata">
+                            <field name="transaction_ref" readonly="state != 'draft'"/>
+                            <field name="sender_source" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_incoming_fund" model="ir.actions.act_window">
+        <field name="name">Incoming Funds</field>
+        <field name="res_model">nn.incoming.fund</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_fund_allocation_tree" model="ir.ui.view">
+        <field name="name">nn.fund.allocation.tree</field>
+        <field name="model">nn.fund.allocation</field>
+        <field name="arch" type="xml">
+            <tree string="Allocations" decoration-info="state in ['submitted', 'gm_approval', 'md_approval']" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'">
+                <field name="name"/>
+                <field name="account_id"/>
+                <field name="project_id"/>
+                <field name="expense_head_id"/>
+                <field name="amount" sum="Total Injected Capital"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_fund_allocation_form" model="ir.ui.view">
+        <field name="name">nn.fund.allocation.form</field>
+        <field name="model">nn.fund.allocation</field>
+        <field name="arch" type="xml">
+            <form string="Allocation Request">
+                <header>
+                    <button name="action_submit" string="Submit Request" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_gm_approve" string="GM Approve" type="object" class="oe_highlight" invisible="state != 'submitted'"/>
+                    <button name="action_md_approve" string="Final MD Approve" type="object" class="oe_highlight" invisible="state != 'gm_approval'"/>
+                    <button name="action_reject" string="Reject" type="object" invisible="state not in ['submitted', 'gm_approval', 'md_approval']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,gm_approval,md_approval,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Source Funding">
+                            <field name="account_id" readonly="state != 'draft'"/>
+                            <field name="amount" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Destination Pipeline Target">
+                            <field name="project_id" readonly="state != 'draft'"/>
+                            <field name="expense_head_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Justification">
+                        <field name="purpose" readonly="state != 'draft'"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fund_allocation" model="ir.actions.act_window">
+        <field name="name">Allocation Requests</field>
+        <field name="res_model">nn.fund.allocation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_fund_requisition_tree" model="ir.ui.view">
+        <field name="name">nn.fund.requisition.tree</field>
+        <field name="model">nn.fund.requisition</field>
+        <field name="arch" type="xml">
+            <tree string="Expense Requisitions" decoration-info="state == 'submitted'" decoration-success="state == 'approved'">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="expense_head_id"/>
+                <field name="amount" sum="Total Requisitions"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_fund_requisition_form" model="ir.ui.view">
+        <field name="name">nn.fund.requisition.form</field>
+        <field name="model">nn.fund.requisition</field>
+        <field name="arch" type="xml">
+            <form string="Fund Requisition File">
+                <header>
+                    <button name="action_submit" string="Submit for Review" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve / Pay Bill" type="object" class="oe_highlight" invisible="state != 'submitted'"/>
+                    <button name="action_reject" string="Reject Bill" type="object" invisible="state != 'submitted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group string="Target Budget Destination">
+                            <field name="project_id" readonly="state != 'draft'"/>
+                            <field name="expense_head_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Quantities">
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="purpose" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fund_requisition" model="ir.actions.act_window">
+        <field name="name">Fund Requisitions</field>
+        <field name="res_model">nn.fund.requisition</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_fund_transfer_tree" model="ir.ui.view">
+        <field name="name">nn.fund.transfer.tree</field>
+        <field name="model">nn.fund.transfer</field>
+        <field name="arch" type="xml">
+            <tree string="Fund Transfers" decoration-info="state == 'submitted'" decoration-success="state == 'approved'">
+                <field name="name"/>
+                <field name="from_project_id"/>
+                <field name="from_expense_head_id"/>
+                <field name="to_project_id"/>
+                <field name="to_expense_head_id"/>
+                <field name="amount" sum="Total Moved Internal Liquidity"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_fund_transfer_form" model="ir.ui.view">
+        <field name="name">nn.fund.transfer.form</field>
+        <field name="model">nn.fund.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Inter-Budget Fund Transfer Execution">
+                <header>
+                    <button name="action_submit" string="Submit Transfer Hold" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve &amp; Execute" type="object" class="oe_highlight" invisible="state != 'submitted'"/>
+                    <button name="action_reject" string="Reject Transfer" type="object" invisible="state != 'submitted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group string="Source Funding Origin (Select One)">
+                            <field name="from_project_id" readonly="state != 'draft'"/>
+                            <field name="from_expense_head_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Target Budget Destination (Select One)">
+                            <field name="to_project_id" readonly="state != 'draft'"/>
+                            <field name="to_expense_head_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Financial Matrix Mapping Parameters">
+                        <field name="amount" readonly="state != 'draft'"/>
+                        <field name="reason" readonly="state != 'draft'"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fund_transfer" model="ir.actions.act_window">
+        <field name="name">Internal Transfers</field>
+        <field name="res_model">nn.fund.transfer</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_project_tree" model="ir.ui.view">
+        <field name="name">nn.project.tree</field>
+        <field name="model">nn.project</field>
+        <field name="arch" type="xml">
+            <tree string="Projects">
+                <field name="name"/>
+                <field name="total_allocated"/>
+                <field name="available_fund"/>
+                <field name="requisition_hold"/>
+                <field name="transfer_hold"/>
+                <field name="incoming_transfers"/>
+                <field name="outgoing_transfers"/>
+                <field name="total_spent"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_project_form" model="ir.ui.view">
+        <field name="name">nn.project.form</field>
+        <field name="model">nn.project</field>
+        <field name="arch" type="xml">
+            <form string="Project File">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group string="Analytical Balance Ledger">
+                        <group>
+                            <field name="total_allocated"/>
+                            <field name="available_fund"/>
+                            <field name="requisition_hold"/>
+                            <field name="transfer_hold"/>
+                        </group>
+                        <group>
+                            <field name="incoming_transfers"/>
+                            <field name="outgoing_transfers"/>
+                            <field name="approved_unspent"/>
+                            <field name="total_spent"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">nn.project</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_expense_head_tree" model="ir.ui.view">
+        <field name="name">nn.expense.head.tree</field>
+        <field name="model">nn.expense.head</field>
+        <field name="arch" type="xml">
+            <tree string="Expense Heads">
+                <field name="name"/>
+                <field name="total_allocated"/>
+                <field name="available_fund"/>
+                <field name="requisition_hold"/>
+                <field name="transfer_hold"/>
+                <field name="total_spent"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_expense_head_form" model="ir.ui.view">
+        <field name="name">nn.expense.head.form</field>
+        <field name="model">nn.expense.head</field>
+        <field name="arch" type="xml">
+            <form string="Expense Head File">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group string="Dashboard Balances">
+                        <group>
+                            <field name="total_allocated"/>
+                            <field name="available_fund"/>
+                            <field name="requisition_hold"/>
+                        </group>
+                        <group>
+                            <field name="transfer_hold"/>
+                            <field name="incoming_transfers"/>
+                            <field name="outgoing_transfers"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_expense_head" model="ir.actions.act_window">
+        <field name="name">Expense Heads</field>
+        <field name="res_model">nn.expense.head</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_fund_root" name="Fund Management" sequence="1"/>
+    
+    <menuitem id="menu_fund_operations" name="Operations" parent="menu_fund_root" sequence="10"/>
+    <menuitem id="menu_fund_configuration" name="Configuration" parent="menu_fund_root" sequence="20"/>
+
+    <menuitem id="menu_action_incoming_fund" name="Incoming Funds" parent="menu_fund_operations" action="action_incoming_fund" sequence="5"/>
+    <menuitem id="menu_action_fund_allocation" name="Allocation Requests" parent="menu_fund_operations" action="action_fund_allocation" sequence="10"/>
+    <menuitem id="menu_action_fund_transfer" name="Internal Transfers" parent="menu_fund_operations" action="action_fund_transfer" sequence="12"/>
+    <menuitem id="menu_action_fund_requisition" name="Project Requisitions" parent="menu_fund_operations" action="action_fund_requisition" sequence="15"/>
+    
+    <menuitem id="menu_action_fund_account" name="Bank Accounts" parent="menu_fund_configuration" action="action_fund_account" sequence="10"/>
+    <menuitem id="menu_action_project" name="Projects" parent="menu_fund_configuration" action="action_project" sequence="20"/>
+    <menuitem id="menu_action_expense_head" name="Expense Heads" parent="menu_fund_configuration" action="action_expense_head" sequence="30"/>
+</odoo>
