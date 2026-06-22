@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -8,18 +9,14 @@ class NnFundAccount(models.Model):
     name = fields.Char(string='Account Name', required=True)
     account_number = fields.Char(string='Account Number')
     
-    # Section 2 Rule Compliance: Converted into an automated read-only calculation view
     total_received = fields.Float(
         string='Total Received Amount', 
         compute='_compute_balances', 
         store=True, 
         readonly=True
     )
-    
     amount_held = fields.Float(string='Amount On Hold', compute='_compute_balances', store=True, readonly=True)
     total_assigned = fields.Float(string='Total Assigned Amount', compute='_compute_balances', store=True, readonly=True)
-    transfer_out_amount = fields.Float(string='Transferred Out', compute='_compute_balances', store=True, readonly=True)
-    transfer_in_amount = fields.Float(string='Transferred In', compute='_compute_balances', store=True, readonly=True)
     available_unassigned_balance = fields.Float(
         string='Available Unassigned Balance', 
         compute='_compute_balances', 
@@ -39,29 +36,17 @@ class NnFundAccount(models.Model):
             held = 0.0
             assigned = 0.0
             for alloc in account.allocation_ids:
-                if alloc.state in ['submitted', 'gm_approved']:
+                if alloc.state in ['submitted', 'gm_approval', 'md_approval']:
                     held += alloc.amount
                 elif alloc.state == 'approved':
                     assigned += alloc.amount
-            
-            trans_out = sum(self.env['nn.fund.transfer'].search([
-                ('from_account_id', '=', account.id),
-                ('state', '=', 'approved')
-            ]).mapped('amount'))
-
-            trans_in = sum(self.env['nn.fund.transfer'].search([
-                ('to_account_id', '=', account.id),
-                ('state', '=', 'approved')
-            ]).mapped('amount'))
 
             account.total_received = total_rec
             account.amount_held = held
             account.total_assigned = assigned
-            account.transfer_out_amount = trans_out
-            account.transfer_in_amount = trans_in
             
-            # Master Formula
-            account.available_unassigned_balance = (total_rec + trans_in) - (trans_out + held + assigned)
+            # Master Formula: (Total Received) - (Funds Active on Hold + Permanent Allocations Out)
+            account.available_unassigned_balance = total_rec - (held + assigned)
 
     @api.constrains('available_unassigned_balance')
     def _check_negative_balance(self):
